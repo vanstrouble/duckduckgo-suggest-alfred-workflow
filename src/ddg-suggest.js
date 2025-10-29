@@ -6,8 +6,8 @@
 function makeItems(itemNames) {
 	return itemNames
 		.filter((name) => name && name.trim())
-		.map((name) => ({
-			uid: name,
+		.map((name, index) => ({
+			uid: `${index}-${name}`,
 			title: name,
 			subtitle: `Search "${name}" on DuckDuckGo`,
 			autocomplete: name,
@@ -46,7 +46,7 @@ function fetchSuggestions(query) {
 	}
 }
 
-// Pre-load environment variables (Google strategy: avoid repeated lookups)
+// Pre-load environment variables
 const oldArg =
 	$.NSProcessInfo.processInfo.environment.objectForKey("oldArg")?.js || "";
 const oldResults =
@@ -60,18 +60,6 @@ const oldResults =
  */
 function run(argv) {
 	const query = argv[0]?.trim();
-
-	if (!query) {
-		return JSON.stringify({
-			items: [
-				{
-					title: "Start typing to search...",
-					subtitle: "DuckDuckGo suggestions will appear",
-					valid: false,
-				},
-			],
-		});
-	}
 
 	// Fast path: User is still typing, return cached results immediately
 	if (query !== oldArg) {
