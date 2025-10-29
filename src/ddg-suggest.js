@@ -12,6 +12,7 @@ function makeItems(itemNames) {
 			subtitle: `Search "${name}" on DuckDuckGo`,
 			autocomplete: name,
 			arg: name,
+			valid: true,
 		}));
 }
 
@@ -23,45 +24,43 @@ function makeItems(itemNames) {
 function fetchSuggestions(query) {
 	const encodedQuery = encodeURIComponent(query);
 	const apiURL = `https://duckduckgo.com/ac/?q=${encodedQuery}&kl=wt-wt`;
-
-	const task = $.NSTask.alloc.init;
-	task.launchPath = "/usr/bin/curl";
-	task.arguments = ["-s", "-m", "5", apiURL];
-
-	const pipe = $.NSPipe.pipe;
-	task.standardOutput = pipe;
-	task.standardError = $.NSPipe.pipe;
+	const url = $.NSURL.URLWithString(apiURL);
 
 	try {
-		task.launch;
-		task.waitUntilExit;
+		const data = $.NSData.dataWithContentsOfURL(url);
 
-		if (task.terminationStatus !== 0) return [];
+		if (!data || data.length === 0) {
+			return [];
+		}
 
-		const data = pipe.fileHandleForReading.readDataToEndOfFile;
-		const response = $.NSString.alloc.initWithDataEncoding(
+		const jsonString = $.NSString.alloc.initWithDataEncoding(
 			data,
 			$.NSUTF8StringEncoding
 		).js;
 
-		return JSON.parse(response || "[]")
+		return JSON.parse(jsonString || "[]")
 			.map((item) => item?.phrase)
-			.filter((phrase) => phrase && phrase !== query);
+			.filter((phrase) => phrase && phrase.trim() && phrase !== query);
 	} catch (e) {
-		// Silently fail on network or parsing errors
 		return [];
 	}
 }
 
+// Pre-load environment variables (Google strategy: avoid repeated lookups)
+const oldArg =
+	$.NSProcessInfo.processInfo.environment.objectForKey("oldArg")?.js || "";
+const oldResults =
+	$.NSProcessInfo.processInfo.environment.objectForKey("oldResults")?.js ||
+	"";
+
 /**
- * Main Alfred Script Filter entry point with caching strategy
+ * Main Alfred Script Filter entry point with aggressive caching strategy
  * @param {string[]} argv - Command line arguments (query)
  * @returns {string} JSON string for Alfred Script Filter
  */
 function run(argv) {
 	const query = argv[0]?.trim();
 
-	// Handle empty query
 	if (!query) {
 		return JSON.stringify({
 			items: [
@@ -74,26 +73,20 @@ function run(argv) {
 		});
 	}
 
-	// Retrieve cached data from environment variables
-	const oldArg =
-		$.NSProcessInfo.processInfo.environment.objectForKey("oldArg")?.js ||
-		"";
-	const oldResults =
-		$.NSProcessInfo.processInfo.environment.objectForKey("oldResults")
-			?.js || "";
-
 	// Fast path: User is still typing, return cached results immediately
-	if (query !== oldArg && oldResults) {
-		const cachedSuggestions = oldResults.split("\n").filter(Boolean);
+	if (query !== oldArg) {
+		const cachedSuggestions = oldResults
+			? oldResults.split("\n").filter(Boolean)
+			: [];
 
 		return JSON.stringify({
-			rerun: 0.1, // Re-run after 100ms to fetch fresh data
+			rerun: 0.1,
 			skipknowledge: true,
 			variables: {
 				oldResults: oldResults,
 				oldArg: query,
 			},
-			items: makeItems([query, ...cachedSuggestions]),
+			items: makeItems([query].concat(cachedSuggestions)),
 		});
 	}
 
@@ -106,6 +99,6 @@ function run(argv) {
 			oldResults: freshSuggestions.join("\n"),
 			oldArg: query,
 		},
-		items: makeItems([query, ...freshSuggestions]),
+		items: makeItems([query].concat(freshSuggestions)),
 	});
 }
