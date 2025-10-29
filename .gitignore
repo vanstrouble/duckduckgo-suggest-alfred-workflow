@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+
+# VSCode
+.vscode/
+
+# JetBrains IDEs
+.idea/
+
+# Alfred Workflow build artifacts
+*.alfredworkflow
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Others
+*.bak
+*.old
+*.orig
