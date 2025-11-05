@@ -1,4 +1,4 @@
-# <img src="img/duckduckgo_logo_icon.png" alt="DuckDuckGo Suggest Alfred Workflow Icon" width="45" align="center"/> DuckDuckGo Suggest | Alfred Workflow
+# <img src="img/ddg-icon-gimp.png" alt="DuckDuckGo Suggest Alfred Workflow Icon" width="45" align="center"/> DuckDuckGo Suggest | Alfred Workflow
 
 Get instant search suggestions from DuckDuckGo as you type in Alfred. This workflow provides fast, real-time autocomplete suggestions directly from DuckDuckGo's API, helping you find what you're looking for faster.
 
