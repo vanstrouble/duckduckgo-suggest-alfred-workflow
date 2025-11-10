@@ -4,6 +4,7 @@ Get instant search suggestions from DuckDuckGo as you type in Alfred. This workf
 
 ## Download
 
+- Available on the Alfred Gallery. [Get it here](https://alfred.app/workflows/vanstrouble/duckduckgo-suggest/).
 - You can also download it directly from GitHub [here](https://github.com/vanstrouble/duckduckgo-suggest-alfred-workflow/releases).
 
 ## Usage
